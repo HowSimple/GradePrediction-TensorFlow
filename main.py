@@ -36,20 +36,26 @@ class GradePredictionNetwork:
             , "race/ethnicity", "parental level of education", "lunch"
             , "test preparation course"]
         label_columns = ['math score','reading score','writing score']
+
         self.student_data = pd.get_dummies(self.student_data, columns=feature_columns, prefix='', prefix_sep='')
         self.train_features, self.test_features, self.valid_features = np.split(self.student_data.sample(frac=1),
                                            [int(0.8 * len(self.student_data)), int(0.9 * len(self.student_data))])
 
         self.train_labels = self.train_features[label_columns]
+        #self.train_labels = self.train_features['math score']
         self.train_features = self.train_features.drop(columns=label_columns)
 
         print("Train features:",self.train_features.head())
         print("Train labels:", self.train_labels.head())
         self.test_labels = self.test_features[label_columns]
+        #self.test_labels = self.test_features["math score"]
+
         self.test_features = self.test_features.drop(columns=label_columns)
         print("Test features:", self.test_features.head())
         print("Test labels:", self.test_labels.head())
         self.valid_labels = self.valid_features[label_columns]
+        #self.valid_labels = self.valid_features["math score"]
+
         self.valid_features = self.valid_features.drop(columns=label_columns)
         print("Valid features:", self.valid_features.head())
         print("Valid labels:", self.valid_labels.head())
@@ -63,12 +69,14 @@ class GradePredictionNetwork:
 
     def model(self):
         print(self.train_features.shape)
-        #print(self.train_features.shape[1:])
-        #print(self.train_features.head())
+
         self.model = tf.keras.models.Sequential([
     #tf.keras.layers.Dense(5, activation="relu", input_shape=tf.self.train_dat.shape[1:]),
     tf.keras.layers.Dense(20, activation="relu"),
-    tf.keras.layers.Dense(1)
+    tf.keras.layers.Dense(15, activation="relu"),
+    tf.keras.layers.Dense(10, activation="relu"),
+
+    tf.keras.layers.Dense(self.train_labels.shape[1])
 ])
 
 
@@ -77,12 +85,7 @@ class GradePredictionNetwork:
         grade_predictions = self.model.predict(self.test_labels)
         df.to_csv(path_or_buf="PredictedStudentPerformance.csv" )
         print(grade_predictions)
-    def normalize_set(self, dataset):
-        print(dataset)
-        normalizer = layers.Normalization( axis=None)
-        dataset = normalizer.adapt(dataset)
-        print(dataset)
-        # = tf.keras.Input(shape=(normalized_dataset.shape[1],))
+
     def train(self, epochs):
         self.model.compile(optimizer='rmsprop', loss='mse', metrics=['mae'])
 
@@ -94,39 +97,33 @@ class GradePredictionNetwork:
                                  verbose=0,
                                  validation_data= (self.test_features, self.test_labels)
                             )
+
         print(self.model.trainable_variables)
 
     def plot_error(self):
         test_loss, test_acc = self.model.evaluate(self.test_features, self.test_labels, verbose=2)
+        valid_loss, valid_acc = self.model.evaluate(self.valid_features, self.valid_labels, verbose=2)
 
-        print('\nTest accuracy:', test_acc)
+
+
+
+        print('\nTest set accuracy:', test_acc)
+
+
+        print('\nValid set accuracy:', valid_acc)
+
+
+
 
         plt.figure(figsize=(10, 8))
         plt.plot(self.history.history['loss'], label='loss')
+        plt.plot(self.history.history['loss'], label='loss')
         plt.plot(self.history.history['val_loss'], label='val_loss')
+
         plt.legend(['loss', 'val_loss'])
         plt.xlabel("")
         plt.ylabel("Mean Squared Error", fontsize=16)
-        plt.show()
-    def train2(self, target_col, epochs):
-
-        self.model.compile(optimizer='rmsprop', loss='mse', metrics=['mae'])
-        print(self.test_dataset.head())
-        print(self.model.trainable_variables)
-        history = self.model.fit(
-            np.array(self.test_dataset['writing score']),
-            self.test_dataset.pop('writing score'),
-            epochs=epochs,
-
-
-            # Calculate validation results on 20% of training data
-            validation_split= 0.2
-        )
-        hist = pd.DataFrame(history.history)
-        hist['epoch'] = history.epoch
-        print(hist.tail())
-        #print(history)
-        #return history
+        #plt.show()
 
 
 
@@ -137,4 +134,4 @@ class GradePredictionNetwork:
 if __name__ == '__main__':
     print('Starting...')
 
-    GradePredictionNetwork("StudentsPerformance.csv", 1,100)
+    GradePredictionNetwork("StudentsPerformance.csv", 1,2000)
