@@ -76,7 +76,7 @@ class GradePredictionNetwork:
     tf.keras.layers.Dense(15, activation="relu"),
     tf.keras.layers.Dense(10, activation="relu"),
 
-    tf.keras.layers.Dense(self.train_labels.shape[1])
+    tf.keras.layers.Dense(self.train_labels.shape[1], activation="sigmoid")
 ])
 
 
@@ -134,4 +134,4 @@ class GradePredictionNetwork:
 if __name__ == '__main__':
     print('Starting...')
 
-    GradePredictionNetwork("StudentsPerformance.csv", 1,2000)
+    GradePredictionNetwork("StudentsPerformance.csv", 1,1000)
