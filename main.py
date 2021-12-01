@@ -14,7 +14,7 @@ class GradePredictionNetwork:
         self.prepare_datasets()
 
         self.train( epochs)
-        self.plot_error()
+        self.evaluate()
         #self.predict()
     def load_input(self, inputPath):
         self.student_data = pd.read_csv(inputPath)
@@ -71,7 +71,7 @@ class GradePredictionNetwork:
 
         self.model = tf.keras.models.Sequential([
             tf.keras.layers.Dense(20, activation="relu"),
-            #tf.keras.layers.Dense(15, activation="relu"),
+            tf.keras.layers.Dense(15, activation="relu"),
             # tf.keras.layers.Dense(10, activation="relu"),
             # tf.keras.layers.Dense(5, activation="relu"),
 
@@ -91,17 +91,18 @@ class GradePredictionNetwork:
                             )
 
 
-    def plot_error(self):
+    def evaluate(self):
         test_loss, test_acc = self.model.evaluate(self.test_features, self.test_labels, verbose=2)
         valid_loss, valid_acc = self.model.evaluate(self.valid_features, self.valid_labels, verbose=2)
 
 
 
 
-        print('\nTest set accuracy: ', test_acc)
+        print('\nTest set metric: {}, loss: {}'.format( test_acc, test_loss))
 
+        print('\nValid set metric: {}, loss: {}'.format( valid_acc, valid_loss))
 
-        print('\nValid set accuracy:', valid_acc)
+        #print('\nValid set error:', valid_acc)
 
 
 
@@ -125,4 +126,4 @@ class GradePredictionNetwork:
 if __name__ == '__main__':
     print('Starting...')
 
-    GradePredictionNetwork("StudentsPerformance.csv", 1,50)
+    GradePredictionNetwork("StudentsPerformance.csv", 1,500)
