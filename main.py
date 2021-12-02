@@ -1,11 +1,12 @@
 import tensorflow as tf
+import keras as ks
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 from tensorflow.keras import layers
 
 class GradePredictionNetwork:
-    def __init__(self, inputFile, gaussians, epochs):
+    def __init__(self, inputFile, epochs, input_layer_size):
         np.set_printoptions(precision=3, suppress=True)
         np.set_printoptions(threshold=np.inf)
 
@@ -13,7 +14,7 @@ class GradePredictionNetwork:
         self.load_input(inputFile)
         self.prepare_datasets()
 
-        self.train( epochs)
+        self.train( epochs, input_layer_size)
         self.evaluate()
         #self.predict()
     def load_input(self, inputPath):
@@ -41,45 +42,32 @@ class GradePredictionNetwork:
                                            [int(0.8 * len(self.student_data)), int(0.9 * len(self.student_data))])
 
         self.train_labels = self.train_features[label_columns]
-        #self.train_labels = self.train_features['math score']
         self.train_features = self.train_features.drop(columns=label_columns)
 
-        #print("Train features:",self.train_features.head())
-        #print("Train labels:", self.train_labels.head())
         self.test_labels = self.test_features[label_columns]
-        #self.test_labels = self.test_features["math score"]
-
         self.test_features = self.test_features.drop(columns=label_columns)
-        #print("Test features:", self.test_features.head())
-        #print("Test labels:", self.test_labels.head())
-        self.valid_labels = self.valid_features[label_columns]
-        #self.valid_labels = self.valid_features["math score"]
 
+        self.valid_labels = self.valid_features[label_columns]
         self.valid_features = self.valid_features.drop(columns=label_columns)
+
+        # print("Train features:",self.train_features.head())
+        # print("Train labels:", self.train_labels.head())
+        # print("Test features:", self.test_features.head())
+        # print("Test labels:", self.test_labels.head())
         #print("Valid features:", self.valid_features.head())
         #print("Valid labels:", self.valid_labels.head())
 
-
-
-
-
-
-
-
-
-    def train(self, epochs):
-
+    def train(self, epochs, input_layer_size):
+        hidden_layer_size = input_layer_size
         self.model = tf.keras.models.Sequential([
-            tf.keras.layers.Dense(20, activation="relu"),
-            tf.keras.layers.Dense(15, activation="relu"),
-            # tf.keras.layers.Dense(10, activation="relu"),
-            # tf.keras.layers.Dense(5, activation="relu"),
+            tf.keras.layers.Dense(input_layer_size, activation="relu"),
+            #tf.keras.layers.Dense(32, activation="relu"),
+            #tf.keras.layers.Dense(10, activation="relu"),
 
             tf.keras.layers.Dense(self.train_labels.shape[1], activation="relu")
 
         ])
-        self.model.compile(optimizer='rmsprop', loss='mse', metrics=['mae'])
-
+        self.model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=1e-4), loss='mse', metrics=['mae'])
         self.history = self.model.fit(self.train_features,
                                  self.train_labels,
 
@@ -89,6 +77,12 @@ class GradePredictionNetwork:
                                  verbose=1,
                                  validation_data= (self.test_features, self.test_labels)
                             )
+        #hidden_layer_size = hidden_layer_size - 5
+        #self.model.add(tf.keras.layers.Dense(hidden_layer_size, activation="relu"))
+
+            # tf.keras.layers.Dense(10, activation="relu"),
+            # tf.keras.layers.Dense(5, activation="relu"),)
+
 
 
     def evaluate(self):
@@ -98,24 +92,21 @@ class GradePredictionNetwork:
 
 
 
-        print('\nTest set metric: {}, loss: {}'.format( test_acc, test_loss))
 
-        print('\nValid set metric: {}, loss: {}'.format( valid_acc, valid_loss))
-
-        #print('\nValid set error:', valid_acc)
+        print('\nTest set error: {}, loss: {}'.format( test_acc, test_loss))
+        print('\nValid set error: {}, loss: {}'.format( valid_acc, valid_loss))
 
 
 
 
         plt.figure(figsize=(10, 8))
         plt.plot(self.history.history['loss'], label='loss')
-        plt.plot(self.history.history['loss'], label='loss')
         plt.plot(self.history.history['val_loss'], label='val_loss')
-
         plt.legend(['loss', 'val_loss'])
         plt.xlabel("")
         plt.ylabel("Mean Squared Error", fontsize=16)
-        #plt.show()
+        
+        plt.show()
 
 
 
@@ -126,4 +117,4 @@ class GradePredictionNetwork:
 if __name__ == '__main__':
     print('Starting...')
 
-    GradePredictionNetwork("StudentsPerformance.csv", 1,500)
+    GradePredictionNetwork("StudentsPerformance.csv",500,64)
