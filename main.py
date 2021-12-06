@@ -20,7 +20,7 @@ class GradePredictionNetwork:
 
     def load_input(self, inputPath):
         self.student_data = pd.read_csv(inputPath)
-            
+
 
         self.gradeLabels = ["math score", "reading score"
             , "writing score"]
