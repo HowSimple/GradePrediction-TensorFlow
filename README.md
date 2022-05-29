@@ -1,4 +1,4 @@
-#GradePrediction-Tensorflow
+# GradePrediction-Tensorflow
 Goal: Given a dataset of student demographics, predict their academic performance.
 A regression neural network in Tensorflow is used, after using Pandas to split the dataset into training/test/validation sets. 
 Pyplot is used to display each model, plotting their accuracy increasing over time.
